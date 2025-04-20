@@ -10,7 +10,7 @@ async function main() {
     // Create a new FoodX client without auto-initialization
     const client = new FoodXClient();
     
-    // Initialize the client manually
+    // Initialize the client manually with minimal config
     await client.initialize({
       tenant: 'example-company',
       blockchain: {
@@ -19,11 +19,8 @@ async function main() {
         useTestnet: true
       },
       offline: {
-        enabled: true,
-        syncInterval: 60000
-      },
-      apiKey: 'test-api-key',
-      baseUrl: 'https://api.example.com'
+        enabled: false // Disable offline to simplify example
+      }
     });
     
     console.log('Client initialized successfully');
@@ -32,21 +29,9 @@ async function main() {
     const blockchainInfo = await client.blockchain.getBlockchainInfo();
     console.log('Blockchain info:', blockchainInfo);
     
-    // Test offline functionality
-    const isOnline = client.offline.isOnline();
-    console.log('Online status:', isOnline);
-    
-    // Get access control configuration
+    // Test if enterprise service is available
     const accessControl = await client.enterprise.getAccessControl();
     console.log('Access control:', accessControl);
-    
-    // Get available data types for export
-    const dataTypes = await client.compliance.getAvailableDataTypes();
-    console.log('Available data types:', dataTypes);
-    
-    // Get registered plugins
-    const plugins = await client.ecosystem.getPlugins();
-    console.log('Registered plugins:', plugins);
     
     console.log('Example completed successfully!');
   } catch (error) {
@@ -55,6 +40,4 @@ async function main() {
 }
 
 // Run the example
-main().catch(error => {
-  console.error('Unhandled error:', error);
-}); 
+main(); 

@@ -56,17 +56,20 @@ export class OfflineService implements IOfflineService {
   
   /**
    * Initialize the offline service
+   * @param config Optional offline configuration
    */
   public async initialize(config?: OfflineConfig): Promise<void> {
     this._logger.info('Initializing offline service');
     
-    // Set default configuration if not provided
+    // Use default config if none provided
     this._config = config || {
-      enabled: true,
-      syncInterval: 60000, // 1 minute
-      maxSyncRetries: 3,
-      conflictResolution: 'timestamp-based'
+      enabled: false
     };
+    
+    if (!this._config.enabled) {
+      this._logger.info('Offline capabilities are disabled');
+      return;
+    }
     
     try {
       // Initialize storage
@@ -75,8 +78,8 @@ export class OfflineService implements IOfflineService {
       // Initialize queue manager
       await this._queueManager.initialize(this._storage);
       
-      // Start automatic sync if enabled
-      if (this._config.enabled && this._config.syncInterval) {
+      // Start automatic sync if configured
+      if (this._config.syncInterval) {
         this.startAutoSync(this._config.syncInterval);
       }
       
