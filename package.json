@@ -10,7 +10,8 @@
     "lint": "eslint src/ --ext .ts",
     "docs": "typedoc --entryPointStrategy expand ./src",
     "generate-clients": "openapi-generator-cli generate -i ./specs/openapi.yaml -g typescript-fetch -o ./clients/typescript",
-    "start:cli": "ts-node src/cli/index.ts"
+    "start:cli": "ts-node src/cli/index.ts",
+    "demo": "ts-node cli-demo.ts"
   },
   "keywords": [
     "blockchain",

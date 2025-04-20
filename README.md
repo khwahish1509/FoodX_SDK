@@ -95,6 +95,25 @@ npm run generate-clients
 npm run start:cli
 ```
 
+## Demo CLI
+
+To try out the SDK features without building a full application, you can use the included demo CLI:
+
+```bash
+# Run the interactive CLI demo
+npx ts-node cli-demo.ts
+```
+
+Available commands in the demo:
+- `help` - Show available commands
+- `blockchain info` - Show blockchain information
+- `blockchain tx <id>` - Show transaction details
+- `offline status` - Show online/offline status
+- `compliance export` - Export data (demo)
+- `enterprise access` - Show access control config
+- `ecosystem plugins` - List available plugins
+- `exit` - Exit the demo
+
 ## License
 
 MIT 
