@@ -5,7 +5,7 @@ import { Logger } from '../../utils/Logger';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Queue manager implementation using local storage
+ * Manages operation queues in the offline storage
  */
 export class LocalQueueManager implements IQueueManager {
   private _logger: Logger;
@@ -13,8 +13,8 @@ export class LocalQueueManager implements IQueueManager {
   private _queueKeyPrefix: string;
   
   /**
-   * Create a new local queue manager
-   * @param queueKeyPrefix Prefix for queue item keys in storage
+   * Create a new queue manager
+   * @param queueKeyPrefix Key prefix for queue items in storage
    */
   constructor(queueKeyPrefix: string = 'queue:') {
     this._logger = new Logger('LocalQueueManager');
@@ -26,8 +26,7 @@ export class LocalQueueManager implements IQueueManager {
    * @param storage Storage to use for persistence
    */
   public async initialize(storage: IOfflineStorage): Promise<void> {
-    this._logger.info('Initializing local queue manager');
-    
+    this._logger.info('Initializing queue manager');
     this._storage = storage;
   }
   
@@ -37,22 +36,22 @@ export class LocalQueueManager implements IQueueManager {
    * @returns Unique ID of the added item
    */
   public async addItem(item: Omit<QueuedItem, 'id'>): Promise<string> {
-    this._logger.debug('Adding item to queue', { resourceType: item.resourceType });
-    
     this.ensureInitialized();
+    this._logger.debug('Adding item to queue', { type: item.operationType });
     
-    // Generate a unique ID for the item
+    // Generate a unique ID
     const id = uuidv4();
     
-    // Save the item with the ID
+    // Create full item with ID
     const queuedItem: QueuedItem = {
-      ...item,
-      id
+      id,
+      ...item
     };
     
+    // Store in the offline storage
     await this._storage!.setItem(this.getItemKey(id), queuedItem);
     
-    this._logger.debug('Item added to queue', { id });
+    this._logger.debug(`Item added to queue with ID: ${id}`);
     return id;
   }
   
@@ -62,9 +61,8 @@ export class LocalQueueManager implements IQueueManager {
    * @param updates Partial updates to apply
    */
   public async updateItem(id: string, updates: Partial<QueuedItem>): Promise<void> {
-    this._logger.debug(`Updating item: ${id}`);
-    
     this.ensureInitialized();
+    this._logger.debug(`Updating queue item: ${id}`);
     
     // Get the existing item
     const item = await this.getItem(id);
@@ -74,15 +72,15 @@ export class LocalQueueManager implements IQueueManager {
     }
     
     // Apply updates
-    const updatedItem: QueuedItem = {
+    const updatedItem = {
       ...item,
       ...updates
     };
     
-    // Save the updated item
+    // Save back to storage
     await this._storage!.setItem(this.getItemKey(id), updatedItem);
     
-    this._logger.debug(`Item updated: ${id}`);
+    this._logger.debug(`Queue item updated: ${id}`);
   }
   
   /**
@@ -90,11 +88,10 @@ export class LocalQueueManager implements IQueueManager {
    * @param id Item ID
    */
   public async getItem(id: string): Promise<QueuedItem | null> {
-    this._logger.debug(`Getting item: ${id}`);
-    
     this.ensureInitialized();
+    this._logger.debug(`Getting queue item: ${id}`);
     
-    // Retrieve the item
+    // Retrieve from storage
     const item = await this._storage!.getItem(this.getItemKey(id));
     
     return item || null;
@@ -105,58 +102,68 @@ export class LocalQueueManager implements IQueueManager {
    * @param filter Filter options
    */
   public async getItems(filter?: QueueItemFilter): Promise<QueuedItem[]> {
-    this._logger.debug('Getting items with filter', filter);
-    
     this.ensureInitialized();
+    this._logger.debug('Getting queue items with filter', filter);
     
-    // Get all queue item keys
+    // Get all keys that match our prefix
     const allKeys = await this._storage!.getAllKeys();
-    const queueItemKeys = allKeys.filter(key => key.startsWith(this._queueKeyPrefix));
+    const queueKeys = allKeys.filter(key => key.startsWith(this._queueKeyPrefix));
     
-    // Get all queue items
+    // Get all items
     const items: QueuedItem[] = [];
-    for (const key of queueItemKeys) {
+    for (const key of queueKeys) {
       const item = await this._storage!.getItem(key);
       if (item) {
         items.push(item);
       }
     }
     
-    // Apply filters
+    // Apply filters if provided
     let filteredItems = items;
     
     if (filter) {
-      if (filter.status) {
-        // Handle both single status and array of statuses
-        const statuses = Array.isArray(filter.status) ? filter.status : [filter.status];
-        filteredItems = filteredItems.filter(item => statuses.includes(item.status));
-      }
-      
-      if (filter.resourceType) {
-        filteredItems = filteredItems.filter(item => item.resourceType === filter.resourceType);
-      }
-      
-      if (filter.resourceId) {
-        filteredItems = filteredItems.filter(item => item.resourceId === filter.resourceId);
-      }
-      
-      if (filter.operationType) {
-        filteredItems = filteredItems.filter(item => item.operationType === filter.operationType);
-      }
+      filteredItems = items.filter(item => {
+        // Filter by status
+        if (filter.status) {
+          if (Array.isArray(filter.status)) {
+            if (!filter.status.includes(item.status)) {
+              return false;
+            }
+          } else if (item.status !== filter.status) {
+            return false;
+          }
+        }
+        
+        // Filter by resource type
+        if (filter.resourceType && item.resourceType !== filter.resourceType) {
+          return false;
+        }
+        
+        // Filter by resource ID
+        if (filter.resourceId && item.resourceId !== filter.resourceId) {
+          return false;
+        }
+        
+        // Filter by operation type
+        if (filter.operationType && item.operationType !== filter.operationType) {
+          return false;
+        }
+        
+        return true;
+      });
       
       // Apply sorting
       if (filter.sortBy) {
-        const sortDirection = filter.sortDirection === 'desc' ? -1 : 1;
-        
         filteredItems.sort((a, b) => {
-          if (filter.sortBy === 'queuedAt') {
-            return sortDirection * (a.queuedAt - b.queuedAt);
-          } else if (filter.sortBy === 'priority') {
-            return sortDirection * (a.priority - b.priority);
-          } else if (filter.sortBy === 'attempts') {
-            return sortDirection * (a.attempts - b.attempts);
+          const sortField = filter.sortBy!;
+          const aValue = a[sortField];
+          const bValue = b[sortField];
+          
+          if (filter.sortDirection === 'desc') {
+            return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+          } else {
+            return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
           }
-          return 0;
         });
       }
       
@@ -166,7 +173,6 @@ export class LocalQueueManager implements IQueueManager {
       }
     }
     
-    this._logger.debug(`Found ${filteredItems.length} items`);
     return filteredItems;
   }
   
@@ -175,38 +181,34 @@ export class LocalQueueManager implements IQueueManager {
    * @param id Item ID
    */
   public async removeItem(id: string): Promise<void> {
-    this._logger.debug(`Removing item: ${id}`);
-    
     this.ensureInitialized();
+    this._logger.debug(`Removing queue item: ${id}`);
     
-    // Remove the item
+    // Remove from storage
     await this._storage!.removeItem(this.getItemKey(id));
-    
-    this._logger.debug(`Item removed: ${id}`);
   }
   
   /**
    * Clear all items from the queue
    */
   public async clearAll(): Promise<void> {
+    this.ensureInitialized();
     this._logger.debug('Clearing all queue items');
     
-    this.ensureInitialized();
-    
-    // Get all queue item keys
+    // Get all keys that match our prefix
     const allKeys = await this._storage!.getAllKeys();
-    const queueItemKeys = allKeys.filter(key => key.startsWith(this._queueKeyPrefix));
+    const queueKeys = allKeys.filter(key => key.startsWith(this._queueKeyPrefix));
     
-    // Remove all queue items
-    for (const key of queueItemKeys) {
+    // Remove each item
+    for (const key of queueKeys) {
       await this._storage!.removeItem(key);
     }
     
-    this._logger.debug(`Cleared ${queueItemKeys.length} queue items`);
+    this._logger.debug(`Cleared ${queueKeys.length} queue items`);
   }
   
   /**
-   * Get the storage key for a queue item
+   * Get the storage key for an item
    * @param id Item ID
    */
   private getItemKey(id: string): string {
@@ -214,7 +216,7 @@ export class LocalQueueManager implements IQueueManager {
   }
   
   /**
-   * Ensure the queue manager is initialized
+   * Ensure the manager is initialized
    */
   private ensureInitialized(): void {
     if (!this._storage) {

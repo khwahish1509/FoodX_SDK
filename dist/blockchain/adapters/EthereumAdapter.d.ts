@@ -3,7 +3,7 @@ import { TransactionOptions } from '../models/TransactionOptions';
 import { TransactionResult } from '../models/TransactionResult';
 import { EthereumConfig } from '../models/BlockchainConfig';
 /**
- * Adapter for Ethereum blockchain interactions
+ * Adapter for Ethereum blockchain networks
  */
 export declare class EthereumAdapter implements IBlockchainAdapter {
     private _logger;
@@ -16,19 +16,17 @@ export declare class EthereumAdapter implements IBlockchainAdapter {
      */
     constructor();
     /**
-     * Initialize the adapter with Ethereum configuration
+     * Initialize the adapter with configuration
      * @param config Ethereum configuration
      */
     initialize(config: EthereumConfig): Promise<void>;
     /**
-     * Get or create a contract instance
-     * @param contractName Contract name
-     * @param abi Contract ABI
-     * @param address Contract address
+     * Get a contract instance by name
+     * @param contractName Name of the contract
      */
     private getContract;
     /**
-     * Submit a transaction to the Ethereum network
+     * Submit a transaction to the blockchain
      * @param contractName Name of the contract to call
      * @param functionName Name of the function to call
      * @param args Arguments to pass to the function
@@ -36,7 +34,7 @@ export declare class EthereumAdapter implements IBlockchainAdapter {
      */
     submitTransaction(contractName: string, functionName: string, args: string[], options?: TransactionOptions): Promise<TransactionResult>;
     /**
-     * Query the Ethereum blockchain without submitting a transaction
+     * Query the blockchain without submitting a transaction
      * @param contractName Name of the contract to call
      * @param functionName Name of the function to call
      * @param args Arguments to pass to the function
@@ -48,7 +46,7 @@ export declare class EthereumAdapter implements IBlockchainAdapter {
      */
     getTransaction(transactionId: string): Promise<any>;
     /**
-     * Get current Ethereum network information
+     * Get current blockchain information
      */
     getBlockchainInfo(): Promise<any>;
 }

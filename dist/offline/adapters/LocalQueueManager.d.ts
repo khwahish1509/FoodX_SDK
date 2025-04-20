@@ -2,15 +2,15 @@ import { IQueueManager, QueueItemFilter } from '../interfaces/IQueueManager';
 import { QueuedItem } from '../models/QueuedItem';
 import { IOfflineStorage } from '../interfaces/IOfflineStorage';
 /**
- * Queue manager implementation using local storage
+ * Manages operation queues in the offline storage
  */
 export declare class LocalQueueManager implements IQueueManager {
     private _logger;
     private _storage;
     private _queueKeyPrefix;
     /**
-     * Create a new local queue manager
-     * @param queueKeyPrefix Prefix for queue item keys in storage
+     * Create a new queue manager
+     * @param queueKeyPrefix Key prefix for queue items in storage
      */
     constructor(queueKeyPrefix?: string);
     /**
@@ -50,12 +50,12 @@ export declare class LocalQueueManager implements IQueueManager {
      */
     clearAll(): Promise<void>;
     /**
-     * Get the storage key for a queue item
+     * Get the storage key for an item
      * @param id Item ID
      */
     private getItemKey;
     /**
-     * Ensure the queue manager is initialized
+     * Ensure the manager is initialized
      */
     private ensureInitialized;
 }
