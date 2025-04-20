@@ -6,24 +6,27 @@ import { FoodXClient, BlockchainType } from './src/index';
 async function main() {
   console.log('Initializing FoodX SDK...');
   
-  // Create a new FoodX client
-  const client = new FoodXClient({
-    tenant: 'example-company',
-    blockchain: {
-      type: BlockchainType.ETHEREUM,
-      network: 'goerli',
-      useTestnet: true
-    },
-    offline: {
-      enabled: true,
-      syncInterval: 60000
-    },
-    apiKey: 'test-api-key',
-    baseUrl: 'https://api.example.com'
-  });
-  
   try {
-    console.log('Initializing client...');
+    // Create a new FoodX client without auto-initialization
+    const client = new FoodXClient();
+    
+    // Initialize the client manually
+    await client.initialize({
+      tenant: 'example-company',
+      blockchain: {
+        type: BlockchainType.ETHEREUM,
+        network: 'goerli',
+        useTestnet: true
+      },
+      offline: {
+        enabled: true,
+        syncInterval: 60000
+      },
+      apiKey: 'test-api-key',
+      baseUrl: 'https://api.example.com'
+    });
+    
+    console.log('Client initialized successfully');
     
     // Query blockchain information
     const blockchainInfo = await client.blockchain.getBlockchainInfo();
@@ -52,4 +55,6 @@ async function main() {
 }
 
 // Run the example
-main().catch(console.error); 
+main().catch(error => {
+  console.error('Unhandled error:', error);
+}); 

@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createClient = exports.WebhookStatus = exports.PluginStatus = exports.ExportFormat = exports.AuditSeverity = exports.AuditEventType = exports.ApiKeyType = exports.ApiKeyStatus = exports.PolicyType = exports.QueuedItemStatus = exports.BlockchainType = exports.configureLogger = exports.LogLevel = exports.Logger = exports.FoodXClient = void 0;
+const FoodXClient_1 = require("./core/FoodXClient");
 // Main client class
-var FoodXClient_1 = require("./core/FoodXClient");
-Object.defineProperty(exports, "FoodXClient", { enumerable: true, get: function () { return FoodXClient_1.FoodXClient; } });
+var FoodXClient_2 = require("./core/FoodXClient");
+Object.defineProperty(exports, "FoodXClient", { enumerable: true, get: function () { return FoodXClient_2.FoodXClient; } });
 var Logger_1 = require("./utils/Logger");
 Object.defineProperty(exports, "Logger", { enumerable: true, get: function () { return Logger_1.Logger; } });
 Object.defineProperty(exports, "LogLevel", { enumerable: true, get: function () { return Logger_1.LogLevel; } });
@@ -36,6 +37,6 @@ Object.defineProperty(exports, "WebhookStatus", { enumerable: true, get: functio
  * @returns A configured FoodX client
  */
 function createClient(config) {
-    return new FoodXClient(config);
+    return new FoodXClient_1.FoodXClient(config);
 }
 exports.createClient = createClient;

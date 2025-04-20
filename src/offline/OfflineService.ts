@@ -7,6 +7,7 @@ import { Logger } from '../utils/Logger';
 import { IOfflineStorage } from './interfaces/IOfflineStorage';
 import { IQueueManager } from './interfaces/IQueueManager';
 import { IndexedDBStorage } from './adapters/IndexedDBStorage';
+import { MemoryStorage } from './adapters/MemoryStorage';
 import { LocalQueueManager } from './adapters/LocalQueueManager';
 
 // Type for event listeners
@@ -31,9 +32,19 @@ export class OfflineService implements IOfflineService {
     this._logger = new Logger('OfflineService');
     this._eventListeners = new Map();
     
-    // Initialize storage and queue manager with defaults
-    // These will be properly configured during initialization
-    this._storage = new IndexedDBStorage();
+    // Determine if we're in a browser environment
+    const isBrowser = typeof window !== 'undefined' && !!window.document;
+    
+    // Initialize storage based on environment
+    if (isBrowser) {
+      this._logger.debug('Using IndexedDBStorage for browser environment');
+      this._storage = new IndexedDBStorage();
+    } else {
+      this._logger.debug('Using MemoryStorage for Node.js environment');
+      this._storage = new MemoryStorage();
+    }
+    
+    // Initialize queue manager
     this._queueManager = new LocalQueueManager();
     
     // Listen for online/offline events

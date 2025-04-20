@@ -90,7 +90,7 @@ export class BlockchainService implements IBlockchainService {
     
     try {
       // Submit the transaction through the active adapter
-      const result = await this._activeAdapter.submitTransaction(
+      const result = await this._activeAdapter!.submitTransaction(
         contractName,
         functionName,
         args,
@@ -122,7 +122,7 @@ export class BlockchainService implements IBlockchainService {
     
     try {
       // Query through the active adapter
-      const result = await this._activeAdapter.queryBlockchain(
+      const result = await this._activeAdapter!.queryBlockchain(
         contractName,
         functionName,
         args
@@ -147,7 +147,7 @@ export class BlockchainService implements IBlockchainService {
     
     try {
       // Get transaction details through the active adapter
-      const result = await this._activeAdapter.getTransaction(transactionId);
+      const result = await this._activeAdapter!.getTransaction(transactionId);
       
       this._logger.debug('Retrieved transaction details successfully');
       return result;
@@ -167,7 +167,7 @@ export class BlockchainService implements IBlockchainService {
     
     try {
       // Get blockchain info through the active adapter
-      const result = await this._activeAdapter.getBlockchainInfo();
+      const result = await this._activeAdapter!.getBlockchainInfo();
       
       this._logger.debug('Retrieved blockchain information successfully');
       return result;

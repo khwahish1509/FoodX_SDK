@@ -4,6 +4,7 @@ exports.OfflineService = void 0;
 const QueuedItem_1 = require("./models/QueuedItem");
 const Logger_1 = require("../utils/Logger");
 const IndexedDBStorage_1 = require("./adapters/IndexedDBStorage");
+const MemoryStorage_1 = require("./adapters/MemoryStorage");
 const LocalQueueManager_1 = require("./adapters/LocalQueueManager");
 /**
  * Service for managing offline capabilities
@@ -16,9 +17,18 @@ class OfflineService {
         this._isOnline = true;
         this._logger = new Logger_1.Logger('OfflineService');
         this._eventListeners = new Map();
-        // Initialize storage and queue manager with defaults
-        // These will be properly configured during initialization
-        this._storage = new IndexedDBStorage_1.IndexedDBStorage();
+        // Determine if we're in a browser environment
+        const isBrowser = typeof window !== 'undefined' && !!window.document;
+        // Initialize storage based on environment
+        if (isBrowser) {
+            this._logger.debug('Using IndexedDBStorage for browser environment');
+            this._storage = new IndexedDBStorage_1.IndexedDBStorage();
+        }
+        else {
+            this._logger.debug('Using MemoryStorage for Node.js environment');
+            this._storage = new MemoryStorage_1.MemoryStorage();
+        }
+        // Initialize queue manager
         this._queueManager = new LocalQueueManager_1.LocalQueueManager();
         // Listen for online/offline events
         if (typeof window !== 'undefined') {
