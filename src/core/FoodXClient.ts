@@ -59,7 +59,23 @@ export class FoodXClient implements IClient {
     try {
       // Initialize all services in order
       await this._blockchainService.initialize();
-      await this._offlineService.initialize();
+      
+      // Configure blockchain service with the appropriate adapter
+      const blockchainService = this._blockchainService as BlockchainService;
+      if (config.blockchain) {
+        await blockchainService.configure(
+          config.blockchain.type,
+          config.blockchain
+        );
+      }
+      
+      // Initialize remaining services
+      if (config.offline) {
+        await this._offlineService.initialize(config.offline);
+      } else {
+        await this._offlineService.initialize({ enabled: false });
+      }
+      
       await this._enterpriseService.initialize();
       await this._complianceService.initialize();
       await this._ecosystemService.initialize();
