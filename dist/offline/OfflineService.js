@@ -38,23 +38,25 @@ class OfflineService {
     }
     /**
      * Initialize the offline service
+     * @param config Optional offline configuration
      */
     async initialize(config) {
         this._logger.info('Initializing offline service');
-        // Set default configuration if not provided
+        // Use default config if none provided
         this._config = config || {
-            enabled: true,
-            syncInterval: 60000,
-            maxSyncRetries: 3,
-            conflictResolution: 'timestamp-based'
+            enabled: false
         };
+        if (!this._config.enabled) {
+            this._logger.info('Offline capabilities are disabled');
+            return;
+        }
         try {
             // Initialize storage
             await this._storage.initialize();
             // Initialize queue manager
             await this._queueManager.initialize(this._storage);
-            // Start automatic sync if enabled
-            if (this._config.enabled && this._config.syncInterval) {
+            // Start automatic sync if configured
+            if (this._config.syncInterval) {
                 this.startAutoSync(this._config.syncInterval);
             }
             this._logger.info('Offline service initialized');

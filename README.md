@@ -1,38 +1,17 @@
 # FoodX SDK
 
-A modular blockchain-based decentralized platform for food traceability and supply chain management.
+A comprehensive blockchain SDK for food supply chain tracking and management.
 
-## Key Features
+## Overview
 
-1. **Multi-Chain Agnosticism**
-   - Supports both private chains (Hyperledger Fabric) and public networks (Ethereum, Polygon, Solana)
-   - Unified API interface that abstracts chain-specific details
-   - Per-tenant blockchain configuration and hybrid approaches
+FoodX SDK provides a simple, unified interface for tracking food products across the entire supply chain, from farm to consumer, using blockchain technology.
 
-2. **Offline-First Client SDK**
-   - Resilient client library with persistent local storage
-   - Deterministic conflict resolution for offline data synchronization
-   - Intelligent sync mechanisms with configurable retry strategies
-
-3. **Developer-First Experience**
-   - OpenAPI 3.0 specification as the single source of truth
-   - Auto-generated strongly-typed client libraries
-   - CLI tool for project scaffolding with sensible defaults
-
-4. **Enterprise Controls**
-   - Fine-grained, attribute-based access control
-   - Hierarchical API keys with scope restrictions
-   - Tiered rate limiting and comprehensive audit logging
-
-5. **Compliance & Reporting**
-   - Flexible data export framework supporting multiple formats
-   - Digital signatures and verification for all exported data
-   - Configurable data retention and archiving policies
-
-6. **Ecosystem & Extensibility**
-   - Clean plugin architecture using dependency injection
-   - Webhook system with retry and delivery confirmation
-   - Analytics framework that can be extended with custom metrics
+Key features:
+- Support for multiple blockchain networks (Ethereum, Hyperledger Fabric, Polygon, Solana)
+- Offline capabilities for areas with poor internet connectivity
+- Built-in compliance and reporting tools
+- Enterprise-grade access control and security
+- Ecosystem integration with external systems
 
 ## Installation
 
@@ -42,78 +21,64 @@ npm install foodx-sdk
 
 ## Quick Start
 
-```typescript
-import { FoodXClient } from 'foodx-sdk';
+```javascript
+import { createClient, BlockchainType } from 'foodx-sdk';
 
-// Initialize the client with configuration
-const client = new FoodXClient({
-  tenant: 'acme-foods',
+// Create and initialize client
+const client = createClient({
+  tenant: 'your-company-id',
   blockchain: {
-    type: 'ethereum',
-    network: 'rinkeby',
-    apiKey: process.env.ETHEREUM_API_KEY
-  },
-  offline: {
-    enabled: true,
-    syncInterval: 60000 // 1 minute
+    type: BlockchainType.ETHEREUM,
+    network: 'ropsten',
+    apiKey: 'your-api-key'
   }
 });
 
-// Record a product movement with automatic offline support
-await client.supplyChain.recordMovement({
-  productId: 'PROD-12345',
-  from: 'FARM-001',
-  to: 'DISTRIBUTOR-003',
-  timestamp: new Date(),
-  metadata: {
-    temperature: 4.2,
-    humidity: 73
-  }
-});
+// Record a product on the blockchain
+await client.blockchain.submitTransaction(
+  'ProductRegistry',
+  'recordProduct',
+  [
+    'product-123',
+    'Organic Apples',
+    'Washington State',
+    new Date().toISOString(),
+    'batch-456'
+  ]
+);
+
+// Query product history
+const history = await client.blockchain.queryBlockchain(
+  'ProductRegistry',
+  'getProductHistory',
+  ['product-123']
+);
 ```
 
-## Documentation
+## Examples
 
-For full documentation and examples, visit our [documentation site](https://docs.foodx-sdk.example).
+- **[Basic Example](./fixed-example.ts)**: Simple initialization and blockchain interaction.
+- **[Supply Chain Example](./supply-chain-example.ts)**: Complete farm-to-store tracking flow.
+- **[Real Data Testing](./real-data-test.ts)**: Test with real blockchain networks.
 
-## Development
+## Testing With Real Data
 
-```bash
-# Install dependencies
-npm install
+To test with real blockchain connections instead of mocks, see our [Real Testing Setup Guide](./REAL_TESTING_SETUP.md).
 
-# Build the project
-npm run build
+## Enterprise Integration
 
-# Run tests
-npm test
+For companies like Walmart integrating this SDK, the typical workflow is:
 
-# Generate client libraries from OpenAPI spec
-npm run generate-clients
-
-# Start the CLI
-npm run start:cli
-```
-
-## Demo CLI
-
-To try out the SDK features without building a full application, you can use the included demo CLI:
-
-```bash
-# Run the interactive CLI demo
-npx ts-node cli-demo.ts
-```
-
-Available commands in the demo:
-- `help` - Show available commands
-- `blockchain info` - Show blockchain information
-- `blockchain tx <id>` - Show transaction details
-- `offline status` - Show online/offline status
-- `compliance export` - Export data (demo)
-- `enterprise access` - Show access control config
-- `ecosystem plugins` - List available plugins
-- `exit` - Exit the demo
+1. **Install & Configure**: Add the SDK to your existing systems with company-specific configuration.
+2. **Connect Existing Systems**: Integrate with inventory, POS, and other enterprise systems.
+3. **Capture Events**: Record key supply chain events (harvest, processing, distribution, retail).
+4. **Verify & Trace**: Query the blockchain for complete product history and verification.
+5. **Customer Access**: Optionally provide consumers with product journey information.
 
 ## License
 
-MIT 
+MIT
+
+## Support
+
+For technical support, please contact support@foodx-sdk.example.com 

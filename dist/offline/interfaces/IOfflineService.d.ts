@@ -1,14 +1,16 @@
 import { SyncOptions } from '../models/SyncOptions';
 import { SyncResult } from '../models/SyncResult';
 import { QueuedItem } from '../models/QueuedItem';
+import { OfflineConfig } from '../models/OfflineConfig';
 /**
  * Interface for offline-first capabilities
  */
 export interface IOfflineService {
     /**
      * Initialize the offline service
+     * @param config Optional offline configuration
      */
-    initialize(): Promise<void>;
+    initialize(config?: OfflineConfig): Promise<void>;
     /**
      * Check if the service is currently online
      */

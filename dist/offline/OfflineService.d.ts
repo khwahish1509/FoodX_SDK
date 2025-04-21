@@ -20,6 +20,7 @@ export declare class OfflineService implements IOfflineService {
     constructor();
     /**
      * Initialize the offline service
+     * @param config Optional offline configuration
      */
     initialize(config?: OfflineConfig): Promise<void>;
     /**
